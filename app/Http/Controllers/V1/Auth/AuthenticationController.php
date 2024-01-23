@@ -28,7 +28,7 @@ class AuthenticationController extends Controller
         return $this->error('Invalid email or password', 401);
       }
 
-      $token = $user->createToken(env('SANTUM_TOKEN'))->plainTextToken;
+      $token = $user->createToken(config('sanctum.token_name'))->plainTextToken;
 
       $userData = $user->only(['id', 'email', 'first_name', 'middle_name', 'last_name', 'status']);
       $data = array_merge($userData, ['token' => $token]);
