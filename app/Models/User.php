@@ -9,11 +9,14 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-  use HasApiTokens, HasFactory, Notifiable;
+  use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
   protected $table = 'users';
 
@@ -23,12 +26,13 @@ class User extends Authenticatable
    * @var array<int, string>
    */
   protected $fillable = [
+    'email',
     'first_name',
     'middle_name',
     'last_name',
-    'email',
+    'suffix',
     'password',
-    'status',
+    'is_active',
   ];
 
   /**
@@ -36,10 +40,7 @@ class User extends Authenticatable
    *
    * @var array<int, string>
    */
-  protected $hidden = [
-    'password',
-    'remember_token',
-  ];
+  protected $hidden = ['password'];
 
   /**
    * The attributes that should be cast.
@@ -63,9 +64,24 @@ class User extends Authenticatable
     });
   }
 
-  public function scopeExist($query, $column, $value)
+  public function userProfile(): HasOne
   {
-    $query->where($column, $value);
+    return $this->hasOne(UserProfile::class);
+  }
+
+  public function socialMedia(): HasMany
+  {
+    return $this->hasMany(SocialMedia::class);
+  }
+
+  public function projects(): HasMany
+  {
+    return $this->hasMany(Projects::class);
+  }
+
+  public function accessToken(): HasOne
+  {
+    return $this->hasOne(AccessToken::class);
   }
 
   public function generateHashedPassword(string $password)
@@ -86,7 +102,7 @@ class User extends Authenticatable
       'status' => 'active',
     ]);
 
-    $token = $user->createToken(env('SANTUM_TOKEN'))->plainTextToken;
+    $token = $user->createToken(config('sanctum.token_name'))->plainTextToken;
 
     return [
       ...$user->getOriginal(),
