@@ -7,12 +7,12 @@ namespace App\Models;
 use Exception;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Foundation\Auth\User as Authenticatable;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
@@ -53,17 +53,6 @@ class User extends Authenticatable
     'password' => 'hashed',
   ];
 
-  protected static function boot()
-  {
-    parent::boot();
-    static::creating(function ($userAccount) {
-      do {
-        $hash = str()->random(mt_rand(6, 20));
-      } while (static::where('hash', $hash)->exists());
-      $userAccount->hash = $hash;
-    });
-  }
-
   public function userProfile(): HasOne
   {
     return $this->hasOne(UserProfile::class);
@@ -89,20 +78,20 @@ class User extends Authenticatable
     return Hash::make($password);
   }
 
-  public function registerUser(array $payload)
+  public function registerUser(array $payload): array
   {
     $password = $this->generateHashedPassword($payload['password']);
 
+    \DB::beginTransaction();
+
     $user = User::create([
       'first_name' => $payload['first_name'],
-      'middle_name' => $payload['middle_name'],
       'last_name' => $payload['last_name'],
       'email' => $payload['email'],
       'password' => $password,
-      'status' => 'active',
     ]);
-
     $token = $user->createToken(config('sanctum.token_name'))->plainTextToken;
+    \DB::commit();
 
     return [
       ...$user->getOriginal(),

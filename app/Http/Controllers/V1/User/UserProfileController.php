@@ -34,4 +34,9 @@ class UserProfileController extends Controller
       return $this->error($throwable->getMessage());
     }
   }
+
+  public function forgetPassword(Request $request)
+  {
+    // 
+  }
 }

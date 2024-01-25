@@ -1,9 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\V1\User\UserProfileController;
 use App\Http\Controllers\V1\Admin\AdminProfileController;
 use App\Http\Controllers\V1\Auth\AuthenticationController;
-use App\Http\Controllers\V1\User\UserProfileController;
+use App\Http\Controllers\V1\VerifyEmailController;
 
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 //   return $request->user();
@@ -26,3 +27,4 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 Route::post('auth/signup', [AuthenticationController::class, 'signup']);
 Route::post('auth/login', [AuthenticationController::class, 'login']);
+Route::post('verify-email', VerifyEmailController::class);

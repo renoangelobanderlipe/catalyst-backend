@@ -12,21 +12,24 @@ trait HttpResponse
   public function withData(array $data, $statusCode = 200)
   {
     return $this->buildMessage([
-      'data' => $data
+      ...$data,
+      'code' => $statusCode
     ], $statusCode);
   }
 
   public function error(string $message, $statusCode = 401)
   {
     return $this->buildMessage([
-      'message' => $message
+      'message' => $message,
+      'code' => $statusCode
     ], $statusCode);
   }
 
   public function success($message = 'Success', $statusCode = 200)
   {
     return $this->buildMessage([
-      'message' => $message
+      'message' => $message,
+      'code' => $statusCode
     ], $statusCode);
   }
 }

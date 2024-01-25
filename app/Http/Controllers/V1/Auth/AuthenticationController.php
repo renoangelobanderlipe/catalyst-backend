@@ -5,6 +5,7 @@ namespace App\Http\Controllers\V1\Auth;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\SignUpRequest;
 use Illuminate\Support\Facades\Hash;
 
 class AuthenticationController extends Controller
@@ -30,7 +31,7 @@ class AuthenticationController extends Controller
 
       $token = $user->createToken(config('sanctum.token_name'))->plainTextToken;
 
-      $userData = $user->only(['id', 'email', 'first_name', 'middle_name', 'last_name', 'status']);
+      $userData = $user->only(['id', 'email', 'first_name', 'middle_name', 'last_name', 'is_active']);
       $data = array_merge($userData, ['token' => $token]);
 
       \DB::commit();
@@ -43,18 +44,16 @@ class AuthenticationController extends Controller
     }
   }
 
-  public function signup(Request $request, User $user)
+  public function signup(SignUpRequest $request, User $user)
   {
-    $filteredRequest = $request->all();
+    $filteredRequest = $request->validated();
 
     try {
-      \DB::beginTransaction();
       $user = $user->registerUser($filteredRequest);
-      \DB::commit();
+
       return $this->withData($user);
     } catch (\Throwable $throwable) {
-      \DB::rollback();
-      $this->error($throwable->getMessage());
+      return $this->error($throwable->getMessage());
     }
   }
 
